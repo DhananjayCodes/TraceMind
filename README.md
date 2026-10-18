@@ -59,6 +59,10 @@ flowchart TD
 | Memory Agent | Finds prior relevant outcomes | Retrieves related incidents, resolutions, and tenant memory |
 | Action Agent | Recommends a safe response | Creates a `PROPOSED` simulated action from current + historical evidence |
 
+> **Hackathon / Full Mode**
+>
+> Docker Compose is the supported judging path. It runs the real FalkorDB service and configures `TRACEMIND_GRAPH_PROVIDER=falkor`; investigations, agent handoffs, and memories are read from and written to FalkorDB. The JSON compatibility provider is **development-only** for offline tests and must not be used for the hackathon demo.
+
 ## Quick start with Docker — recommended
 
 Prerequisite: Docker Desktop or Docker Engine with Docker Compose v2.
