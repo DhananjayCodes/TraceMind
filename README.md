@@ -1,28 +1,39 @@
-# TraceMind — Graph-First Incident Intelligence
+# TraceMind
 
-TraceMind is an explainable, multi-agent engineering incident intelligence system. It uses **FalkorDB as the load-bearing context graph** to connect incidents, services, deployments, commits, tickets, technical decisions, service owners, and previous resolutions.
+### Explainable AI Engineering Incident Commander powered by FalkorDB
 
-It is built for the “Agents That Act on Connected Data”, “Agent Memory and Coordination”, and “Company Brain” hackathon tracks.
+TraceMind is an explainable, multi-agent engineering incident intelligence system that uses **FalkorDB as its context and memory layer**. It connects incidents, services, deployments, commits, tickets, engineering decisions, owners, historical incidents, and resolutions in one graph.
 
-## Why TraceMind
+When an incident occurs, specialist agents traverse those relationships to determine what changed, why it matters, what worked previously, and what action should be taken. Every recommendation includes the graph evidence that produced it.
 
-During a production incident, the important answer rarely lives in one ticket, dashboard, or chat message. TraceMind follows factual relationships stored in FalkorDB and returns the path that supports its recommendation.
+Built for **Graph Hacks: Context for AI Agents**, organized by WeMakeDevs and FalkorDB.
 
-For the flagship scenario, it retrieves:
+## The Problem
+
+Engineering incidents rarely exist in isolation. A checkout failure may actually be caused by a connected chain of deployment, code, ticket, decision, and dependency records. Traditional tools expose these as separate records, so agents see fragments instead of the causal chain.
+
+TraceMind gives agents a shared connected context and returns the factual path supporting its recommendation.
+
+## Demo Scenario
+
+The flagship demo investigates **INC-104 — Checkout failures after a production deployment**:
 
 ```text
 INC-104
-  → checkout-service
-  → DEP-184
-  → a91f2
-  → PAY-432
-  → DEC-91
-  → payment-api
+  ├── STARTED_AFTER → DEP-184
+  │                     └── CONTAINS → a91f2
+  │                                      └── IMPLEMENTS → PAY-432
+  │                                                       └── RESULTED_IN → DEC-91
+  │                                                                          └── CHANGED → payment-api
+  └── AFFECTS → checkout-service
 
-INC-071 → RES-17 → restore timeout to 5 seconds
+INC-071
+  ├── AFFECTS → payment-api
+  └── RESOLVED_BY → RES-17
+                    └── APPLIED_TO → payment-api
 ```
 
-The recommendation is not prewritten on the incident. It is derived from the connected deployment/code/decision graph and the historical resolution precedent.
+The graph reveals that `DEC-91` changed the payment API timeout from 5 seconds to 2 seconds. TraceMind then finds the historical `INC-071` precedent, where restoring the timeout to 5 seconds succeeded. The resulting recommendation is to restore the payment timeout to 5 seconds and monitor checkout error rate. The action is simulated and approval-gated.
 
 ## Features
 
@@ -34,6 +45,7 @@ The recommendation is not prewritten on the incident. It is derived from the con
 - Approval-gated simulated actions. TraceMind never performs infrastructure changes.
 - Responsive internal engineering-operations dashboard.
 - Deterministic seeded data; no paid LLM or API key required.
+- Persistent AOF-backed FalkorDB memory that survives ordinary container recreation.
 
 ## Architecture
 
@@ -62,6 +74,8 @@ flowchart TD
 > **Hackathon / Full Mode**
 >
 > Docker Compose is the supported judging path. It runs the real FalkorDB service and configures `TRACEMIND_GRAPH_PROVIDER=falkor`; investigations, agent handoffs, and memories are read from and written to FalkorDB. The JSON compatibility provider is **development-only** for offline tests and must not be used for the hackathon demo.
+
+FalkorDB persists to `/var/lib/falkordb/data` with AOF enabled. `docker compose down` preserves runtime-created memories and graph state; `docker compose down -v` intentionally removes them.
 
 ## Quick start with Docker — recommended
 
