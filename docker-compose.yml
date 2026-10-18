@@ -1,0 +1,18 @@
+services:
+  falkordb:
+    image: falkordb/falkordb:latest
+    volumes: ["falkor_data:/data"]
+  backend:
+    build: ./backend
+    ports: ["8000:8000"]
+    environment:
+      TRACEMIND_STATE_FILE: /data/tracemind-graph.json
+      TRACEMIND_GRAPH_PROVIDER: falkor
+      FALKORDB_URL: redis://falkordb:6379
+    volumes: ["tracemind_data:/data"]
+    depends_on: [falkordb]
+  frontend:
+    build: ./frontend
+    ports: ["5173:80"]
+    depends_on: [backend]
+volumes: {falkor_data: {}, tracemind_data: {}}

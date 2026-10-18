@@ -1,0 +1,20 @@
+# Python
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+
+# JavaScript
+frontend/node_modules/
+frontend/dist/
+frontend/*.tsbuildinfo
+
+# Local state and environment
+.env
+.env.local
+*.log
+tracemind-graph.json
+
+# Editor / OS
+.DS_Store
+.vscode/
