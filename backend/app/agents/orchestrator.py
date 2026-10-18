@@ -19,10 +19,9 @@ class IncidentOrchestrator:
         if hasattr(self.graph,"evidence_for_incident"):
             match=self.graph.evidence_for_incident(incident_id)
             if not match: raise ValueError("No graph evidence path found for this incident")
-            ids, relationships, prior_id, resolution_id = match
-            nodes=self.graph.get_nodes(list(dict.fromkeys(ids+[prior_id,resolution_id])))
-            edge_map={"STARTED_AFTER":("INC-104","DEP-184"),"CONTAINS":("DEP-184","a91f2"),"IMPLEMENTS":("a91f2","PAY-432"),"RESULTED_IN":("PAY-432","DEC-91"),"CHANGED":("DEC-91","payment-api"),"AFFECTS":("INC-071","payment-api"),"RESOLVED_BY":("INC-071","RES-17")}
-            edges=[{"source":edge_map[r][0],"target":edge_map[r][1],"label":r,"source":"falkordb-cypher"} for r in relationships if r in edge_map]
+            ids, relationships, prior_id, resolution_id, checkout_id = match
+            nodes=self.graph.get_nodes(list(dict.fromkeys(ids+[checkout_id,prior_id,resolution_id])))
+            edges=self.graph.evidence_edges(list(dict.fromkeys(ids+[checkout_id,prior_id,resolution_id])))
         else:
             ids=["INC-104","checkout-service","DEP-184","a91f2","PAY-432","DEC-91","payment-api","INC-071","RES-17"]
             nodes=[self.graph.nodes[i] for i in ids]; edges=[e for e in self.graph.edges if e['source'] in ids and e['target'] in ids]; prior_id,resolution_id="INC-071","RES-17"

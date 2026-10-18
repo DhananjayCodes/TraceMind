@@ -1,7 +1,9 @@
 services:
   falkordb:
     image: falkordb/falkordb:latest
-    volumes: ["falkor_data:/data"]
+    environment:
+      REDIS_ARGS: "--appendonly yes"
+    volumes: ["falkor_data:/var/lib/falkordb/data"]
   backend:
     build: ./backend
     ports: ["8000:8000"]

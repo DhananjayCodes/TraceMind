@@ -71,13 +71,13 @@ class FalkorGraph:
     def evidence_for_incident(self, incident_id):
         # The path itself is the authoritative retrieval primitive used by agents.
         query="""MATCH p=(i:Incident {id:$incident})-[:STARTED_AFTER]->(:Deployment)-[:CONTAINS]->(:Commit)-[:IMPLEMENTS]->(:Ticket)-[:RESULTED_IN]->(:Decision)-[:CHANGED]->(api:Service)
-        MATCH (i)-[:AFFECTS]->(:Service)-[:DEPENDS_ON*1..2]->(api)
+        MATCH (i)-[:AFFECTS]->(checkout:Service)-[:DEPENDS_ON*1..2]->(api)
         MATCH (prior:Incident)-[:AFFECTS]->(api)<-[:APPLIED_TO]-(res:Resolution)<-[:RESOLVED_BY]-(prior)
-        RETURN [n IN nodes(p) | n.id], [r IN relationships(p) | type(r)], prior.id, res.id"""
+        RETURN [n IN nodes(p) | n.id], [r IN relationships(p) | type(r)], prior.id, res.id, checkout.id"""
         rows=self._rows(self._query(query,{"incident":incident_id}))
         if not rows: return None
-        ids, rels, prior,res=rows[0]
-        return ids,rels,prior,res
+        ids, rels, prior,res,checkout=rows[0]
+        return ids,rels,prior,res,checkout
 
     def create_memory(self, incident_id, tenant, description):
         stamp=datetime.now(timezone.utc).isoformat(); id=f"MEM-{tenant}-{int(datetime.now().timestamp()*1000)}"
@@ -92,3 +92,7 @@ class FalkorGraph:
     def incidents(self):
         rows=self._rows(self._query("MATCH (i:Incident) RETURN labels(i),properties(i) ORDER BY i.id"))
         return [{"id":p["id"],"type":p.get("type",labels[0]),**p} for labels,p in rows]
+
+    def evidence_edges(self, ids):
+        rows=self._rows(self._query("MATCH (a)-[r]->(b) WHERE a.id IN $ids AND b.id IN $ids RETURN a.id,type(r),b.id,properties(r)", {"ids": ids}))
+        return [{"source":source,"label":label,"target":target,**props} for source,label,target,props in rows]
