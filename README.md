@@ -64,8 +64,8 @@ flowchart TD
 Prerequisite: Docker Desktop or Docker Engine with Docker Compose v2.
 
 ```bash
-git clone <your-repository-url>
-cd kunalkushwah_hackathon
+git clone https://github.com/DhananjayCodes/TraceMind.git
+cd TraceMind
 docker compose up --build
 ```
 
